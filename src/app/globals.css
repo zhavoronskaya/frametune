@@ -3,25 +3,68 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: rgba(28, 29, 33, 0.9);
+  --foreground: #ffffff;
+  --canvas: rgba(28, 29, 33, 1);
+  --sidebar: rgba(28, 29, 33, 0.98);
+  --sidebar-active: rgba(172, 172, 172, 0.21);
+  --active-node:rgba(74, 88, 120, 1);
+  --btn-bg-primary: #131313;
+  --btn-bg-secondary: rgb(28, 28, 28);
+  --border: rgba(172, 172, 172, 0.21)
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
+  overflow: hidden;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-satoshi);
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+input:focus,
+button:focus-visible {
+  outline: 1px solid white;
+}
+summary:focus-visible {
+  outline: 1px solid white;
+}
+
+
+input[type="range"]:focus {
+  outline: none;
+
+}
+input[type="range"]:hover {
+  accent-color: var(--active-node);
+
+}
+
+input[type="range"] {
+  accent-color: var(--active-node);
+}
+
+summary {
+  list-style: none;
+}
+
+summary::marker {
+  display: none;
+}
+
+.animation-fade-in {
+  animation: fade-in 2s ease-in forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
