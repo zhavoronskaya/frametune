@@ -9,6 +9,7 @@ import {
   CircleGeometry,
   Color,
   CylinderGeometry,
+  DoubleSide,
   Group,
   MathUtils,
   Mesh,
@@ -30,6 +31,8 @@ import {
 import { Cylinder, Line, Segment } from "@/types";
 import BufferGeometryService from "@/services/BufferGeometry";
 import useAppSounds from "@/hooks/useAppSounds";
+
+import ParticalesManager, { ParticlesManagerHandle } from "./ParticlesManager";
 
 type Vector3Like = [number, number, number] | number;
 
@@ -193,6 +196,7 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
   const setActiveEntity = useAppStore((state) => state.setActiveEntity);
   const activeEntity = useAppStore((state) => state.activeEntity);
   const playingSegmentTweens = useRef(new TweenGroup());
+  const particlesRef = useRef<ParticlesManagerHandle>(null);
 
   const lineId = cylinder.lineId;
   const posY = lines[lineId].positionY;
@@ -232,6 +236,8 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
     playingSegmentTweens.current.update();
   });
 
+  const progress = useRef(0);
+
   useFrame((state, delta) => {
     if (!groupRef.current) return;
     groupRef.current.rotation.z -= cylinder.speed * delta;
@@ -241,13 +247,19 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
     const angle = MathUtils.radToDeg(rotationZ % (2 * Math.PI));
     const angleBetweenSegments = 360 / cylinder.segments.length;
     const activeSegmentIndex = Math.floor(angle / angleBetweenSegments);
+
     if (activeSegmentIndex !== prevActiveSegmentIdx.current) {
       const segmentId = cylinder.segments[activeSegmentIndex];
       const segment = segments[segmentId];
       if (!segment) return;
-      const isSegmentsPlaying = appSounds.playSegmentSounds(segment);
+
       prevActiveSegmentIdx.current = activeSegmentIndex;
-      isSegmentsPlaying && playingSegmentAnimation(state.scene, segment);
+
+      if (appSounds.playSegmentSounds(segment)) {
+        particlesRef.current?.play();
+        progress.current = 1.0 - 0.5;
+        playingSegmentAnimation(state.scene, segment);
+      }
     }
   });
 
@@ -260,38 +272,41 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
     activeEntity?.type === "cylinder" && activeEntity.id === cylinder.id;
 
   return (
-    <group
-      ref={groupRef}
-      position={[cylinder.positionX, posY, 0]}
-      rotation={[0, 0, Math.PI / 2]}
-    >
-      <mesh
-        onClick={handleClick}
-        rotation={[Math.PI / 2, 0, 0]}
-        // onPointerMissed={handlePointerMissed}
-        ref={cylinderRef}
-        scale={scale}
-      >
-        <cylinderGeometry
-          args={[
-            cylinder.radius,
-            cylinder.radius,
-            1,
-            cylinder.segments.length,
-            16,
-          ]}
-        />
-        <meshBasicMaterial vertexColors wireframe />
-        <Edges
-          key={cylinder.segments.length}
-          linewidth={2}
-          threshold={1}
-          visible={isEdgesVisible}
-          color={"white"}
-        />
-      </mesh>
+    <group position={[cylinder.positionX, posY, 0]}>
+      <group ref={groupRef} rotation={[0, 0, Math.PI / 2]}>
+        <mesh
+          onClick={handleClick}
+          rotation={[Math.PI / 2, 0, 0]}
+          // onPointerMissed={handlePointerMissed}
+          ref={cylinderRef}
+          scale={scale}
+        >
+          <cylinderGeometry
+            args={[
+              cylinder.radius,
+              cylinder.radius,
+              1,
+              cylinder.segments.length,
+              16,
+            ]}
+          />
+          <meshBasicMaterial vertexColors wireframe />
+          <Edges
+            key={cylinder.segments.length}
+            linewidth={2}
+            threshold={1}
+            visible={isEdgesVisible}
+            color={"white"}
+          />
+        </mesh>
 
-      <MusicSegments scale={scale} cylinder={cylinder} />
+        <MusicSegments scale={scale} cylinder={cylinder} />
+      </group>
+
+      <ParticalesManager
+        ref={particlesRef}
+        position={new Vector3(cylinder.radius * 0.1, 0, 0)}
+      />
     </group>
   );
 };
@@ -320,20 +335,33 @@ const MusicSegments = ({
 
   // console.log("circleMesh", circleMesh.geometry);
   const positions = circleMesh.geometry.attributes.position.array;
-
+  const progress = 1.0 - 0.5;
   return (
     <group rotation={[0, 0, -Math.PI / 2]} scale={0.1}>
       {cylinder.segments.map((id, idx) => (
-        <MusicSegment
-          key={id}
-          scale={0.1}
-          segment={segments[id]}
-          position={[
-            positions[(idx + 1) * 3],
-            positions[(idx + 1) * 3 + 1],
-            positions[(idx + 1) * 3 + 2],
-          ]}
-        />
+        <group key={id}>
+          <MusicSegment
+            scale={0.1}
+            segment={segments[id]}
+            position={[
+              positions[(idx + 1) * 3],
+              positions[(idx + 1) * 3 + 1],
+              positions[(idx + 1) * 3 + 2],
+            ]}
+          />
+          <SoundLine
+            progressPosition={[
+              positions[(idx + 1) * 3] * progress,
+              positions[(idx + 1) * 3 + 1] * progress,
+              positions[(idx + 1) * 3 + 2] * progress,
+            ]}
+            segmentPosition={[
+              positions[(idx + 1) * 3],
+              positions[(idx + 1) * 3 + 1],
+              positions[(idx + 1) * 3 + 2],
+            ]}
+          />
+        </group>
       ))}
     </group>
   );
@@ -358,7 +386,6 @@ const MusicSegment = ({ segment, scale, position }: MusicSegmentProps) => {
 
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    console.log("SEGMENT CLICK");
     if (segment) setActiveEntity(segment);
   };
 
@@ -368,7 +395,6 @@ const MusicSegment = ({ segment, scale, position }: MusicSegmentProps) => {
   return (
     <mesh
       onClick={handleClick}
-      // onPointerMissed={handlePointerMissed}
       ref={segmentRef}
       scale={scale}
       position={position}
@@ -383,6 +409,25 @@ const MusicSegment = ({ segment, scale, position }: MusicSegmentProps) => {
         color={"white"}
       />
     </mesh>
+  );
+};
+
+type SoundLineProps = {
+  progressPosition: Vector3Like;
+  segmentPosition: Vector3Like;
+};
+
+const SoundLine = ({ progressPosition, segmentPosition }: SoundLineProps) => {
+  const color = useMemo(() => {
+    return new Color().setHSL(Math.random(), Math.random(), 0.2);
+  }, []);
+  return (
+    <DreiLine
+      points={[progressPosition, segmentPosition]}
+      lineWidth={1}
+      segments
+      color={color}
+    />
   );
 };
 

@@ -51,19 +51,23 @@ const useAppSounds = () => {
   const segmentsSounds = useSoundsStore((s) => s.segmentsSounds);
   const cylinders = useAppStore((s) => s.cylinders);
   const lines = useAppStore((s) => s.lines);
-  const isMuted = useAppStore((s) => s.isMuted);
+  const isMutedGlobally = useAppStore((s) => s.isMuted);
 
   const playSegmentSounds = (segment: Segment) => {
     const cylinder = cylinders[segment.cylinderId];
     const line = lines[cylinder.lineId];
 
-    if (segment.isMuted || cylinder.isMuted || line.isMuted || isMuted)
-      return false;
+    const sounds = segmentsSounds[segment.id];
+    if (!sounds) return false;
 
-    segmentsSounds[segment.id]?.forEach((sound) => {
-      console.log("SRC", sound.audio.src);
-      sound.audio.src && sound.audio.play();
-    });
+    const isMuted =
+      segment.isMuted || cylinder.isMuted || line.isMuted || isMutedGlobally;
+    if (isMuted) return false;
+
+    const nonEmptySound = sounds.find((s) => Boolean(s.src));
+    if (!nonEmptySound) return false;
+
+    sounds.forEach((sound) => sound.audio.play());
 
     return true;
   };

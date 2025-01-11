@@ -10,8 +10,6 @@ import MuteSoundButton from "@/components/MuteSoundButton";
 export default async function Home() {
   const sounds = await SoundRepository.getAllSounds();
 
-  console.log("SOIUNDS", sounds);
-
   return (
     <>
       <SoundsProvider sounds={sounds}>

@@ -79,6 +79,7 @@ const LineNode = ({
 }) => {
   const changeLineName = useAppStore((s) => s.changeLineName);
   const deleteLine = useAppStore((s) => s.deleteLine);
+  const addCylinder = useAppStore((s) => s.addCylinder);
   const activeEntity = useAppStore((state) => state.activeEntity);
   const setActiveEntity = useAppStore((state) => state.setActiveEntity);
 
@@ -107,6 +108,11 @@ const LineNode = ({
     e.preventDefault();
     deleteLine(line.id);
   };
+  const addItem = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    addCylinder(line.id);
+  };
 
   return (
     <details className="entity-tree__node" data-line-id={line.id}>
@@ -117,6 +123,7 @@ const LineNode = ({
           onNameChange={handleNameChange}
           onClick={handleClick}
           onTrashClick={deleteItem}
+          onPlusClick={addItem}
         >
           {line.name}
         </NodeName>
