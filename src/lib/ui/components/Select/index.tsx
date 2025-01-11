@@ -1,4 +1,4 @@
-import { ChevronDown, CrossIcon, Music4Icon, XIcon } from "lucide-react";
+import { ChevronDown, XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import useClickOutside from "../../hooks/useClickOutside";
 import EmptyState from "../EmptyState";

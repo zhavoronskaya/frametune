@@ -9,13 +9,12 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import Select, { Option } from "@/lib/ui/components/Select";
+import Select from "@/lib/ui/components/Select";
 import { useAppStore } from "@/state";
 import { Id, Segment, Sound } from "@/types";
 import useAppSounds from "@/hooks/useAppSounds";
 import Button from "@/lib/ui/components/Button";
 import MuteSoundSwitch from "../MuteSoundSwitch";
-import { div } from "three/tsl";
 
 const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   const segments = useAppStore((state) => state.segments);
@@ -122,7 +121,8 @@ const SoundOption = ({ src }: { src: Sound["src"] }) => {
   }, []);
 
   useEffect(() => {
-    isPlaying ? audio.current.play() : audio.current.pause();
+    if (isPlaying) audio.current.play();
+    else audio.current.pause();
   }, [isPlaying]);
 
   return (

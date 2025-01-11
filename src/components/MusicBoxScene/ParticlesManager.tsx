@@ -1,6 +1,6 @@
 import { Vector3 } from "three";
 import Particles, { ParticlesHandle } from "./Particles";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { forwardRef, useImperativeHandle, useRef } from "react";
 
 export type ParticlesManagerHandle = {
   play: () => void;

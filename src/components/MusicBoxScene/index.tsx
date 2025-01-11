@@ -8,8 +8,6 @@ import {
   Box3,
   CircleGeometry,
   Color,
-  CylinderGeometry,
-  DoubleSide,
   Group,
   MathUtils,
   Mesh,

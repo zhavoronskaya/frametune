@@ -1,8 +1,7 @@
 "use client";
+import { Volume2Icon, VolumeXIcon } from "lucide-react";
 import Button from "@/lib/ui/components/Button";
 import { useAppStore } from "@/state";
-import { Volume2Icon, VolumeIcon, VolumeXIcon } from "lucide-react";
-import { useState } from "react";
 
 const MuteSoundButton = () => {
   const isMuted = useAppStore((s) => s.isMuted);

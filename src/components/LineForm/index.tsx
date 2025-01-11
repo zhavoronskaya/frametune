@@ -1,5 +1,5 @@
 import { useAppStore } from "@/state";
-import { Cylinder, Id } from "@/types";
+import { Id } from "@/types";
 import MuteSoundSwitch from "../MuteSoundSwitch";
 
 const LineForm = ({ lineId }: { lineId: Id }) => {
