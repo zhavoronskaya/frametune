@@ -431,7 +431,7 @@ export const useSoundsStore = create<SoundsState>()((set, get) => ({
 
   addSound: (segmentId, src) => {
     set((state) => {
-      const audio = new Audio(src);
+      const audio = new Audio(src || undefined);
       const sound: Sound = { src, audio };
 
       const segmentSounds = state.segmentsSounds[segmentId] ?? [];
