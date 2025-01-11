@@ -1,0 +1,8 @@
+- [x] Mute sounds, lines, cylinders
+- [x] Fix bug with angles while playing sound
+- [x] Sorting sound in folders by type
+- [] Lighting segments which playing now
+- [] Multiple audios
+- [] Tagging
+- [] Sharing or saving or export
+- [] Action bar
