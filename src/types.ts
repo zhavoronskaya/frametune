@@ -1,3 +1,5 @@
+import AudioPool from "./services/AudioPool";
+
 export type Id = number;
 
 export type Line = {
@@ -39,7 +41,7 @@ export type Entity = Line | Cylinder | Segment;
 
 export type Sound = {
   src: string;
-  audio: HTMLAudioElement;
+  audio: AudioPool;
 };
 
 export type SegmentsSounds = Record<Segment["id"], Sound[]>;

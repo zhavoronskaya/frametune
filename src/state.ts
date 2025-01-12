@@ -14,6 +14,7 @@ import {
 } from "./types";
 
 import SegmentService from "./services/Segment";
+import AudioPool from "./services/AudioPool";
 
 export const STORAGE_KEY = "frametune-store";
 
@@ -405,7 +406,7 @@ const segmentsSounds: SegmentsSounds = {};
 Object.values(segments).forEach((segment) => {
   const sounds: Sound[] = [];
   segment.sounds.forEach((src) => {
-    const audio = new Audio(src);
+    const audio = new AudioPool(src, 10);
     const sound: Sound = { src, audio };
     sounds.push(sound);
   });
@@ -431,7 +432,7 @@ export const useSoundsStore = create<SoundsState>()((set) => ({
 
   addSound: (segmentId, src) => {
     set((state) => {
-      const audio = new Audio(src || undefined);
+      const audio = new AudioPool(src, 10);
       const sound: Sound = { src, audio };
 
       const segmentSounds = state.segmentsSounds[segmentId] ?? [];
@@ -456,7 +457,8 @@ export const useSoundsStore = create<SoundsState>()((set) => ({
             if (idx !== sidx) return s;
 
             const audio = s.audio;
-            audio.src = src;
+            audio.setSrc(src);
+
             return { src, audio };
           }),
         },
