@@ -9,6 +9,7 @@ const SegmentService = {
       cylinderId,
       sounds: [],
       isMuted: false,
+      tags: [],
     };
 
     return segment;

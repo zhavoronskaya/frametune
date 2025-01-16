@@ -1,6 +1,7 @@
 import { useAppStore } from "@/state";
 import { Id } from "@/types";
 import MuteSoundSwitch from "../MuteSoundSwitch";
+import AddTagsInput from "../AddTagsInput";
 
 const LineForm = ({ lineId }: { lineId: Id }) => {
   const lines = useAppStore((state) => state.lines);
@@ -15,6 +16,7 @@ const LineForm = ({ lineId }: { lineId: Id }) => {
         checked={line.isMuted}
         onChange={() => toggleMuteLine(line.id)}
       />
+      <AddTagsInput entity={line} />
     </div>
   );
 };

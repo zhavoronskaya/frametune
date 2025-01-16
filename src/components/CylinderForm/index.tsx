@@ -1,6 +1,7 @@
 import { useAppStore } from "@/state";
 import { Cylinder, Id } from "@/types";
 import MuteSoundSwitch from "../MuteSoundSwitch";
+import AddTagsInput from "../AddTagsInput";
 
 const CylinderForm = ({ cylinderId }: { cylinderId: Id }) => {
   const cylinders = useAppStore((state) => state.cylinders);
@@ -39,6 +40,7 @@ const CylinderForm = ({ cylinderId }: { cylinderId: Id }) => {
         min={0}
         max={10}
       />
+      <AddTagsInput entity={cylinder} />
     </div>
   );
 };

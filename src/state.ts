@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import {
   AppState,
   Cylinder,
+  Entity,
   Id,
   Line,
   Segment,
@@ -28,6 +29,7 @@ export const useAppStore = create<AppState>()(
       lines: {},
       cylinders: {},
       segments: {},
+      tags: {},
       isMuted: false,
 
       activeEntity: null,
@@ -65,6 +67,7 @@ export const useAppStore = create<AppState>()(
             cylinders: [],
             positionY: Object.keys(state.lines).length,
             isMuted: false,
+            tags: [],
           };
           return { lines: { ...state.lines, [line.id]: line } };
         });
@@ -162,6 +165,7 @@ export const useAppStore = create<AppState>()(
           radius: 1,
           speed: 0,
           isMuted: false,
+          tags: [],
         };
 
         const newLine = {
@@ -229,6 +233,7 @@ export const useAppStore = create<AppState>()(
           };
         });
       },
+
       toggleMuteCylinder: (cylinderId: Id) => {
         set((state) => {
           const cylinder = state.cylinders[cylinderId];
@@ -248,6 +253,103 @@ export const useAppStore = create<AppState>()(
         });
       },
 
+      addEntityTag: (entity: Entity, tagName: string) => {
+        if (!tagName) return;
+
+        const state = get();
+        const tag = state.tags[tagName] || {
+          name: tagName,
+          lines: [],
+          segments: [],
+          cylinders: [],
+        };
+
+        const updatedEntity = {
+          ...entity,
+          tags: Array.from(new Set([...(entity.tags || []), tag.name])),
+        };
+
+        const key = `${updatedEntity.type}s` as const;
+        tag[key].push(updatedEntity.id);
+
+        set((state) => {
+          return {
+            tags: {
+              ...state.tags,
+              [tag.name]: tag,
+            },
+            [key]: {
+              ...state[key],
+              [updatedEntity.id]: updatedEntity,
+            },
+          };
+        });
+
+        // set((state) => {
+        //   if(updatedEntity.type === "line")
+        //   {
+        //     return {
+        //       lines: {
+        //         ...state.lines,
+        //         [entity.id]: updatedEntity,
+        //       },
+        //     };
+        //   }
+        //   if(updatedEntity.type === "cylinder")
+        //     {
+        //       return {
+        //         cylinders: {
+        //           ...state.cylinders,
+        //           [entity.id]:updatedEntity,
+        //         },
+        //       };
+        //     }
+
+        //     if(updatedEntity.type === "segment")
+        //       {
+        //         return {
+        //           segments: {
+        //             ...state.segments,
+        //             [entity.id]: updatedEntity,
+        //           },
+        //         };
+        //       }
+        //       return state;
+        // })
+      },
+
+      deleteEntityTag: (entity: Entity, tagName: string) => {
+        const state = get();
+        const tags = { ...state.tags };
+        const key = `${entity.type}s` as const;
+        const tag = tags[tagName];
+        if (!tag) return;
+
+        tag[key] = tag[key].filter((id) => id != entity.id);
+
+        if (
+          tag.lines.length === 0 &&
+          tag.cylinders.length === 0 &&
+          tag.segments.length === 0
+        ) {
+          delete tags[tagName];
+        } else {
+          tags[tag.name] = { ...tag };
+        }
+
+        set((state) => {
+          const updatedTags = entity.tags.filter((tag) => tag != tagName);
+
+          return {
+            [key]: {
+              ...state[key],
+              [entity.id]: { ...entity, tags: updatedTags },
+            },
+            tags,
+          };
+        });
+      },
+
       addSegment: (cylinderId: Id) => {
         const state = get();
         const cylinder = state.cylinders[cylinderId];
@@ -262,6 +364,7 @@ export const useAppStore = create<AppState>()(
           cylinderId: cylinder.id,
           sounds: [],
           isMuted: false,
+          tags: [],
         };
 
         const newSegmentsList = [...cylinder.segments, newSegment.id];
@@ -366,6 +469,7 @@ export const useAppStore = create<AppState>()(
           };
         });
       },
+
       toggleMuteSegment: (segmentId: Id) => {
         const state = get();
         const segment = state.segments[segmentId];
@@ -478,3 +582,8 @@ export const useSoundsStore = create<SoundsState>()((set) => ({
     });
   },
 }));
+
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  // @ts-expect-error
+  window.getState = useAppStore.getState;
+}

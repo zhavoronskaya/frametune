@@ -9,9 +9,19 @@ export type Line = {
   positionY: number;
   cylinders: Id[];
   isMuted: boolean;
+  tags: string[];
 };
 
 export type Lines = Record<Line["id"], Line>;
+
+// export type PitchLoop = {
+//   center: {x: 0, y: 0},
+//   segmetns: [
+//     {},
+//     {},
+//     {},
+//   ]
+// }
 
 export type Cylinder = {
   id: Id;
@@ -23,8 +33,18 @@ export type Cylinder = {
   radius: number;
   speed: number;
   isMuted: boolean;
+  tags: string[];
 };
 export type Cylinders = Record<Cylinder["id"], Cylinder>;
+
+export type Tag = {
+  name: string;
+  lines: Id[];
+  segments: Id[];
+  cylinders: Id[];
+};
+
+export type Tags = Record<Tag["name"], Tag>;
 
 export type Segment = {
   id: Id;
@@ -33,6 +53,7 @@ export type Segment = {
   cylinderId: Id;
   sounds: Sound["src"][];
   isMuted: boolean;
+  tags: string[];
 };
 
 export type Segments = Record<Segment["id"], Segment>;
@@ -50,7 +71,9 @@ export interface AppState {
   nextLineId: number;
   nextCylinerId: number;
   nextSegmentId: number;
+
   isMuted: boolean;
+  tags: Tags;
   lines: Lines;
   cylinders: Cylinders;
   segments: Segments;
@@ -68,22 +91,27 @@ export interface AppState {
   changeLinePosition: (id: Id, positionY: number) => void;
   changeLineName: (id: Id, name: string) => void;
   recalculateLinesPositions: () => void;
+
   toggleMuteLine: (id: Id) => void;
 
   addCylinder: (id: Id) => Cylinder | null;
   updateCylinder: (cylinder: Cylinder) => void;
   deleteCylinder: (id: Id) => void;
   changeCylinderName: (id: Id, name: string) => void;
+
   toggleMuteCylinder: (id: Id) => void;
 
   addSegment: (cylinderId: Id) => void;
   deleteSegment: (id: Id, force?: boolean) => void;
   changeSegmentName: (id: Id, name: string) => void;
+
   addSegmentSound: (id: Id) => void;
   updateSegmentSound: (id: Id, idx: number, src: string) => void;
   deleteSegmentSound: (id: Id, idx: number) => void;
   toggleMuteSegment: (id: Id) => void;
   setActiveEntity: (entity: Entity | null) => void;
+  addEntityTag: (entity: Entity, tag: string) => void;
+  deleteEntityTag: (entity: Entity, tagName: string) => void;
 }
 
 export interface SoundsState {

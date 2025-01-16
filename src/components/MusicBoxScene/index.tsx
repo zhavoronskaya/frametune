@@ -1,7 +1,14 @@
 "use client";
 
 import { Easing, Tween, Group as TweenGroup } from "@tweenjs/tween.js";
-import { MutableRefObject, useEffect, useMemo, useRef } from "react";
+import {
+  forwardRef,
+  MutableRefObject,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+} from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
   BackSide,
@@ -18,7 +25,7 @@ import {
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 
 import { Line as DreiLine, Edges, OrbitControls } from "@react-three/drei";
-import { useAppStore } from "@/state";
+import { useAppStore, useSoundsStore } from "@/state";
 import {
   isOrthographicCamera,
   isPerspectiveCamera,
@@ -26,7 +33,7 @@ import {
   perspectiveZoomWithControls,
 } from "./helpers/Camera";
 
-import { Cylinder, Line, Segment } from "@/types";
+import { Cylinder, Id, Line, Segment } from "@/types";
 import BufferGeometryService from "@/services/BufferGeometry";
 import useAppSounds from "@/hooks/useAppSounds";
 
@@ -195,6 +202,7 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
   const activeEntity = useAppStore((state) => state.activeEntity);
   const playingSegmentTweens = useRef(new TweenGroup());
   const particlesRef = useRef<ParticlesManagerHandle>(null);
+  const musicSegmentsRef = useRef<MusicSegmentsHandle>(null);
 
   const lineId = cylinder.lineId;
   const posY = lines[lineId].positionY;
@@ -234,8 +242,6 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
     playingSegmentTweens.current.update();
   });
 
-  const progress = useRef(0);
-
   useFrame((state, delta) => {
     if (!groupRef.current) return;
     groupRef.current.rotation.z -= cylinder.speed * delta;
@@ -255,7 +261,7 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
 
       if (appSounds.playSegmentSounds(segment)) {
         particlesRef.current?.play();
-        progress.current = 1.0 - 0.5;
+        musicSegmentsRef.current?.playSegment(segment.id);
         playingSegmentAnimation(state.scene, segment);
       }
     }
@@ -298,7 +304,11 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
           />
         </mesh>
 
-        <MusicSegments scale={scale} cylinder={cylinder} />
+        <MusicSegments
+          scale={scale}
+          cylinder={cylinder}
+          ref={musicSegmentsRef}
+        />
       </group>
 
       <ParticalesManager
@@ -309,61 +319,74 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
   );
 };
 
-const MusicSegments = ({
-  cylinder,
-  scale,
-}: {
-  cylinder: Cylinder;
-  scale: number;
-}) => {
-  const segments = useAppStore((state) => state.segments);
+type MusicSegmentsHandle = { playSegment: (id: Id) => void };
+type MusicSegmentsProps = { cylinder: Cylinder; scale: number };
 
-  const circleMesh = useMemo(() => {
-    const { radius, segments } = cylinder;
-    const geometry = new CircleGeometry(radius, segments.length);
+const MusicSegments = forwardRef<MusicSegmentsHandle, MusicSegmentsProps>(
+  function MusicSegments({ cylinder, scale }, ref) {
+    const progressBySegmentId = useRef(
+      Object.fromEntries(cylinder.segments.map((id) => [id, 0]))
+    );
+    const segmentsSounds = useSoundsStore((s) => s.segmentsSounds);
+    const segments = useAppStore((state) => state.segments);
 
-    const material = new MeshBasicMaterial();
-    const mesh = new Mesh(geometry, material);
-    // mesh.geometry.setIndex(null);
-    mesh.rotation.z = -Math.PI / 2;
-    mesh.scale.set(scale, scale, scale);
+    const circleMesh = useMemo(() => {
+      const { radius, segments } = cylinder;
+      const geometry = new CircleGeometry(radius, segments.length);
 
-    return mesh;
-  }, [cylinder, scale]);
+      const material = new MeshBasicMaterial();
+      const mesh = new Mesh(geometry, material);
+      // mesh.geometry.setIndex(null);
+      mesh.rotation.z = -Math.PI / 2;
+      mesh.scale.set(scale, scale, scale);
+      return mesh;
+    }, [cylinder, scale]);
 
-  // console.log("circleMesh", circleMesh.geometry);
-  const positions = circleMesh.geometry.attributes.position.array;
-  const progress = 1.0 - 0.5;
-  return (
-    <group rotation={[0, 0, -Math.PI / 2]} scale={0.1}>
-      {cylinder.segments.map((id, idx) => (
-        <group key={id}>
-          <MusicSegment
-            scale={0.1}
-            segment={segments[id]}
-            position={[
-              positions[(idx + 1) * 3],
-              positions[(idx + 1) * 3 + 1],
-              positions[(idx + 1) * 3 + 2],
-            ]}
-          />
-          <SoundLine
-            progressPosition={[
-              positions[(idx + 1) * 3] * progress,
-              positions[(idx + 1) * 3 + 1] * progress,
-              positions[(idx + 1) * 3 + 2] * progress,
-            ]}
-            segmentPosition={[
-              positions[(idx + 1) * 3],
-              positions[(idx + 1) * 3 + 1],
-              positions[(idx + 1) * 3 + 2],
-            ]}
-          />
-        </group>
-      ))}
-    </group>
-  );
-};
+    const positions = circleMesh.geometry.attributes.position.array;
+
+    useImperativeHandle(ref, () => {
+      return {
+        playSegment: (id: Id) => {
+          progressBySegmentId.current[id] = 0;
+        },
+      };
+    });
+
+    return (
+      <group rotation={[0, 0, -Math.PI / 2]} scale={0.1}>
+        {cylinder.segments.map((id, idx) => {
+          const progress = progressBySegmentId.current[idx] ?? 0;
+
+          return (
+            <group key={id}>
+              <MusicSegment
+                scale={0.1}
+                segment={segments[id]}
+                position={[
+                  positions[(idx + 1) * 3],
+                  positions[(idx + 1) * 3 + 1],
+                  positions[(idx + 1) * 3 + 2],
+                ]}
+              />
+              <SoundLine
+                progressPosition={[
+                  positions[(idx + 1) * 3] * progress,
+                  positions[(idx + 1) * 3 + 1] * progress,
+                  positions[(idx + 1) * 3 + 2] * progress,
+                ]}
+                segmentPosition={[
+                  positions[(idx + 1) * 3],
+                  positions[(idx + 1) * 3 + 1],
+                  positions[(idx + 1) * 3 + 2],
+                ]}
+              />
+            </group>
+          );
+        })}
+      </group>
+    );
+  }
+);
 
 type MusicSegmentProps = {
   segment: Segment;

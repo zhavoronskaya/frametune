@@ -15,6 +15,7 @@ import { Id, Segment, Sound } from "@/types";
 import useAppSounds from "@/hooks/useAppSounds";
 import Button from "@/lib/ui/components/Button";
 import MuteSoundSwitch from "../MuteSoundSwitch";
+import AddTagsInput from "../AddTagsInput";
 
 const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   const segments = useAppStore((state) => state.segments);
@@ -102,6 +103,7 @@ const SegmentSounds = ({ segment }: { segment: Segment }) => {
           />
         </Button>
       </div>
+      <AddTagsInput entity={segment} />
     </div>
   );
 };

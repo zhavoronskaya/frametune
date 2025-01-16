@@ -6,6 +6,7 @@ import SidebarLeft from "@/components/SidebarLeft";
 import SoundRepository from "@/services/SoundsRepository";
 import { SoundsProvider } from "@/hooks/useAppSounds";
 import MuteSoundButton from "@/components/MuteSoundButton";
+import CommandPalette from "@/components/CommandPalette";
 
 export default async function Home() {
   const sounds = await SoundRepository.getAllSounds();
@@ -22,7 +23,8 @@ export default async function Home() {
           </div>
         </header>
 
-        <main className="h-full w-full pt-[41px]">
+        <main className="h-full w-full pt-[41px] relative">
+          <CommandPalette />
           <div className="flex flex-row h-full w-full">
             <div className="w-[256px] h-full bg-[var(--sidebar)] border-r border-[var(--border)] relative">
               <SidebarLeft />
