@@ -6,6 +6,7 @@ import { useAppStore } from "@/state";
 import { Cylinder, Cylinders, Line, Segment, Segments } from "@/types";
 import { cn } from "@/lib/ui/utils/classname";
 import { isInViewport } from "@/lib/ui/utils/viewport";
+import EmptyState from "@/lib/ui/components/EmptyState";
 
 const SidebarLeft = () => {
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -52,18 +53,29 @@ const SidebarLeft = () => {
 
   return (
     <div ref={sidebarRef} className="entity-tree h-full overflow-auto">
-      <div className="py-6 px-4 text-sm">
-        {linesList.map((line) => {
-          return (
-            <LineNode
-              key={line.id}
-              line={line}
-              cylinders={cylinders}
-              segments={segments}
-            />
-          );
-        })}
-      </div>
+      {linesList.length === 0 && (
+        <EmptyState
+          // icon={}
+          title={"No lines created"}
+          description={"Click + to create a line"}
+          className="h-full justify-center"
+        />
+      )}
+
+      {linesList.length > 0 && (
+        <div className="py-6 px-4 text-sm">
+          {linesList.map((line) => {
+            return (
+              <LineNode
+                key={line.id}
+                line={line}
+                cylinders={cylinders}
+                segments={segments}
+              />
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
