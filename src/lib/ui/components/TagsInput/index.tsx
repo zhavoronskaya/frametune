@@ -1,5 +1,5 @@
 import { XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import useClickOutside from "../../hooks/useClickOutside";
 import { cn } from "../../utils/classname";
 import { Tags } from "@/types";
@@ -45,7 +45,9 @@ const TagsInput = ({ addTag, deleteTag, tags = [], taglist = {} }: Props) => {
   const selectTagFromEditable = () => {
     addTag(tmpTag);
     setTmpTag("");
-    editableRef.current && (editableRef.current.innerText = "");
+    if (editableRef.current) {
+      editableRef.current.innerText = "";
+    }
   };
 
   return (
