@@ -517,8 +517,16 @@ Object.values(segments).forEach((segment) => {
   segmentsSounds[segment.id] = sounds;
 });
 
-export const useSoundsStore = create<SoundsState>()((set) => ({
+export const useSoundsStore = create<SoundsState>()((set, get) => ({
   segmentsSounds,
+
+  getSegmentSoundDuration: (id) => {
+    const { segmentsSounds } = get();
+    const sounds = segmentsSounds[id];
+    if (!sounds) return 0;
+
+    return sounds.reduce((acc, s) => Math.max(acc, s.audio.duration), 0);
+  },
 
   addSegment: (id) => {
     set((state) => ({

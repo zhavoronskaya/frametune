@@ -24,19 +24,24 @@ export default async function Home() {
         </header>
 
         <main className="h-full w-full pt-[41px] relative">
-          <CommandPalette />
           <div className="flex flex-row h-full w-full">
             <div className="w-[256px] h-full bg-[var(--sidebar)] border-r border-[var(--border)] relative">
               <SidebarLeft />
             </div>
 
-            <div className="flex-1 bg-[var(--canvas)] p-2 overflow-hidden relative">
+            <div className="flex-1 bg-[var(--canvas)] p-2 overflow-hidden relative ">
               <MusicBoxCanvas />
-              <div className="absolute z-10 bottom-16 left-[50%] translate-x-[-50%] w-64 text-center animation-fade-in">
-                <AddLineButton />
-              </div>
-              <div className="absolute right-2 bottom-16 translate-x-[-50%]  text-center animation-fade-in">
-                <MuteSoundButton />
+              <div className="absolute z-10  bottom-16 left-[50%] translate-x-[-50%] w-[80%] text-center animation-fade-in bg-[--sidebar-active] px-2 rounded-md">
+                <div className="flex gap-2 w-full justify-between items-center ">
+                  <div className="flex-1">
+                    <CommandPalette />
+                  </div>
+
+                  <div className="flex gap-2">
+                    <AddLineButton />
+                    <MuteSoundButton />
+                  </div>
+                </div>
               </div>
             </div>
 

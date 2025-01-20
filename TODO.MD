@@ -3,6 +3,8 @@
 - [x] Sorting sound in folders by type
 - [ ] Lighting segments which playing now
 - [x] Multiple audios
-- [ ] Tagging
-- [ ] Sharing or saving or export
+- [x] Tagging
 - [ ] Action bar
+- [ ] Sharing or saving or export
+- [ ] Volume component
+- [ ] Pitch effect

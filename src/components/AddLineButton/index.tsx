@@ -11,7 +11,7 @@ const AddLineButton = () => {
   };
 
   return (
-    <Button size="lg" rounded className="px-2 py-2" onClick={handleClick}>
+    <Button size="md" rounded className="px-2 py-2" onClick={handleClick}>
       <PlusIcon color="#ffffff" strokeWidth={1} />
     </Button>
   );

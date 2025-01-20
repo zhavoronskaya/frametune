@@ -123,4 +123,6 @@ export interface SoundsState {
   addSound: (segmentId: Id, src: Sound["src"]) => void;
   updateSound: (segmentId: Id, idx: number, src: string) => void;
   deleteSound: (segmentId: Id, idx: number) => void;
+
+  getSegmentSoundDuration: (segmentId: Id) => number; // seconds
 }

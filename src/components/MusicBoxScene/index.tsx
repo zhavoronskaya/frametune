@@ -8,6 +8,7 @@ import {
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import {
@@ -15,6 +16,7 @@ import {
   Box3,
   CircleGeometry,
   Color,
+  DoubleSide,
   Group,
   MathUtils,
   Mesh,
@@ -25,6 +27,8 @@ import {
 import { Canvas, ThreeEvent, useFrame, useThree } from "@react-three/fiber";
 
 import { Line as DreiLine, Edges, OrbitControls } from "@react-three/drei";
+import { Line2, LineSegments2 } from "three-stdlib";
+
 import { useAppStore, useSoundsStore } from "@/state";
 import {
   isOrthographicCamera,
@@ -39,7 +43,8 @@ import useAppSounds from "@/hooks/useAppSounds";
 
 import ParticalesManager, { ParticlesManagerHandle } from "./ParticlesManager";
 
-type Vector3Like = [number, number, number] | number;
+type Vector3Array = [number, number, number];
+type Vector3Like = Vector3Array | number;
 
 const MusicBoxCanvas = () => {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
@@ -165,7 +170,7 @@ const MusicLine = ({ line, position, scale }: LineProps) => {
         onClick={handleClick}
       >
         <planeGeometry args={[20, 1]} />
-        <meshBasicMaterial color={"white"} />
+        <meshBasicMaterial color={"white"} side={DoubleSide} />
       </mesh>
 
       <DreiLine
@@ -238,11 +243,9 @@ const MusicCylinder = ({ cylinder, scale = 1 }: MusicCylinderProps) => {
     playingSegmentTweens.current.add(tween1, tween2);
   };
 
-  useFrame(() => {
-    playingSegmentTweens.current.update();
-  });
-
   useFrame((state, delta) => {
+    playingSegmentTweens.current.update();
+
     if (!groupRef.current) return;
     groupRef.current.rotation.z -= cylinder.speed * delta;
 
@@ -324,16 +327,18 @@ type MusicSegmentsProps = { cylinder: Cylinder; scale: number };
 
 const MusicSegments = forwardRef<MusicSegmentsHandle, MusicSegmentsProps>(
   function MusicSegments({ cylinder, scale }, ref) {
-    const progressBySegmentId = useRef(
-      Object.fromEntries(cylinder.segments.map((id) => [id, 0]))
+    const getSegmentSoundDuration = useSoundsStore(
+      (s) => s.getSegmentSoundDuration
     );
-    const segmentsSounds = useSoundsStore((s) => s.segmentsSounds);
     const segments = useAppStore((state) => state.segments);
+
+    const segmentHandleBySegmentId = useRef(
+      {} as Record<Segment["id"], MusicSegmentHandle | null>
+    );
 
     const circleMesh = useMemo(() => {
       const { radius, segments } = cylinder;
       const geometry = new CircleGeometry(radius, segments.length);
-
       const material = new MeshBasicMaterial();
       const mesh = new Mesh(geometry, material);
       // mesh.geometry.setIndex(null);
@@ -347,7 +352,11 @@ const MusicSegments = forwardRef<MusicSegmentsHandle, MusicSegmentsProps>(
     useImperativeHandle(ref, () => {
       return {
         playSegment: (id: Id) => {
-          progressBySegmentId.current[id] = 0;
+          const segmentHandle = segmentHandleBySegmentId.current[id];
+          if (!segmentHandle) return;
+
+          const duration = getSegmentSoundDuration(id);
+          segmentHandle.play(duration);
         },
       };
     });
@@ -355,32 +364,20 @@ const MusicSegments = forwardRef<MusicSegmentsHandle, MusicSegmentsProps>(
     return (
       <group rotation={[0, 0, -Math.PI / 2]} scale={0.1}>
         {cylinder.segments.map((id, idx) => {
-          const progress = progressBySegmentId.current[idx] ?? 0;
-
           return (
-            <group key={id}>
-              <MusicSegment
-                scale={0.1}
-                segment={segments[id]}
-                position={[
-                  positions[(idx + 1) * 3],
-                  positions[(idx + 1) * 3 + 1],
-                  positions[(idx + 1) * 3 + 2],
-                ]}
-              />
-              <SoundLine
-                progressPosition={[
-                  positions[(idx + 1) * 3] * progress,
-                  positions[(idx + 1) * 3 + 1] * progress,
-                  positions[(idx + 1) * 3 + 2] * progress,
-                ]}
-                segmentPosition={[
-                  positions[(idx + 1) * 3],
-                  positions[(idx + 1) * 3 + 1],
-                  positions[(idx + 1) * 3 + 2],
-                ]}
-              />
-            </group>
+            <MusicSegment
+              key={`${cylinder.radius}-${cylinder.segments.length}-${id}`} // TODO find better solution to reset line tweens
+              ref={(r) => {
+                segmentHandleBySegmentId.current[id] = r;
+              }}
+              scale={0.1}
+              segment={segments[id]}
+              position={[
+                positions[(idx + 1) * 3],
+                positions[(idx + 1) * 3 + 1],
+                positions[(idx + 1) * 3 + 2],
+              ]}
+            />
           );
         })}
       </group>
@@ -391,65 +388,109 @@ const MusicSegments = forwardRef<MusicSegmentsHandle, MusicSegmentsProps>(
 type MusicSegmentProps = {
   segment: Segment;
   scale?: Vector3Like;
-  position: Vector3Like;
+  position: Vector3Array;
 };
 
-const MusicSegment = ({ segment, scale, position }: MusicSegmentProps) => {
-  const segmentRef = useRef<Mesh | null>(null);
-  const setActiveEntity = useAppStore((state) => state.setActiveEntity);
-  const activeEntity = useAppStore((state) => state.activeEntity);
+type MusicSegmentHandle = {
+  play: (durationSeconds: number) => void;
+};
 
-  useEffect(() => {
-    BufferGeometryService.colorizeGeometryVertices(
-      segmentRef?.current?.geometry
+const MusicSegment = forwardRef<MusicSegmentHandle, MusicSegmentProps>(
+  function MusicSegment({ segment, scale, position }, ref) {
+    const segmentRef = useRef<Mesh | null>(null);
+    const setActiveEntity = useAppStore((state) => state.setActiveEntity);
+    const activeEntity = useAppStore((state) => state.activeEntity);
+
+    const lineRef = useRef<Line2 | LineSegments2>(null);
+    const lineProgressPos = useRef<Vector3Array>([...position]);
+    const lineProgressTween = useRef<Tween | null>(
+      new Tween(lineProgressPos.current)
+        .easing(Easing.Linear.None)
+        .onUpdate((v) => {
+          const line = lineRef.current;
+          if (!line) return;
+          line.geometry.attributes.instanceEnd.setXYZ(0, v[0], v[1], v[2]);
+          line.geometry.attributes.instanceEnd.needsUpdate = true;
+        })
     );
-  }, [segment]);
 
-  const handleClick = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation();
-    if (segment) setActiveEntity(segment);
-  };
+    const lineColor = useMemo(() => {
+      return new Color().setHSL(Math.random(), Math.random(), 0.2);
+    }, []);
 
-  const isEdgesVisible =
-    activeEntity?.type === "segment" && activeEntity.id === segment.id;
+    const linePoints = useMemo(() => {
+      // lineProgressPos.current = [...position];
+      // lineProgressTween.current?.stop();
+      // lineProgressTween.current = new Tween(lineProgressPos.current)
+      //   .easing(Easing.Linear.None)
+      //   .onUpdate((v) => {
+      //     const line = lineRef.current;
+      //     if (!line) return;
+      //     line.geometry.attributes.instanceEnd.setXYZ(0, v[0], v[1], v[2]);
+      //     line.geometry.attributes.instanceEnd.needsUpdate = true;
+      //   });
 
-  return (
-    <mesh
-      onClick={handleClick}
-      ref={segmentRef}
-      scale={scale}
-      position={position}
-      name={segment.id.toString()}
-    >
-      <sphereGeometry args={[2, 8, 4]} />
-      <meshBasicMaterial wireframe vertexColors />
-      <Edges
-        linewidth={2}
-        threshold={1}
-        visible={isEdgesVisible}
-        color={"white"}
-      />
-    </mesh>
-  );
-};
+      return [position, lineProgressPos.current];
+    }, [...position]);
 
-type SoundLineProps = {
-  progressPosition: Vector3Like;
-  segmentPosition: Vector3Like;
-};
+    useEffect(() => {
+      BufferGeometryService.colorizeGeometryVertices(
+        segmentRef?.current?.geometry
+      );
+    }, [segment]);
 
-const SoundLine = ({ progressPosition, segmentPosition }: SoundLineProps) => {
-  const color = useMemo(() => {
-    return new Color().setHSL(Math.random(), Math.random(), 0.2);
-  }, []);
-  return (
-    <DreiLine
-      points={[progressPosition, segmentPosition]}
-      lineWidth={1}
-      segments
-      color={color}
-    />
-  );
-};
+    useImperativeHandle(ref, () => ({
+      play: (duration: number) => {
+        lineProgressTween.current?.stop();
+
+        if (duration === 0) return;
+        lineProgressTween.current?.to([0, 0, 0], duration * 1000);
+        lineProgressTween.current?.start();
+      },
+    }));
+
+    useFrame(() => {
+      lineProgressTween.current?.update();
+    });
+
+    const handleClick = (e: ThreeEvent<MouseEvent>) => {
+      e.stopPropagation();
+      if (segment) setActiveEntity(segment);
+    };
+
+    const isEdgesVisible =
+      activeEntity?.type === "segment" && activeEntity.id === segment.id;
+
+    return (
+      <>
+        <mesh
+          onClick={handleClick}
+          ref={segmentRef}
+          scale={scale}
+          position={position}
+          name={segment.id.toString()}
+        >
+          <sphereGeometry args={[2, 8, 4]} />
+          <meshBasicMaterial wireframe vertexColors />
+          <Edges
+            linewidth={2}
+            threshold={1}
+            visible={isEdgesVisible}
+            color={"white"}
+          />
+        </mesh>
+
+        <DreiLine
+          ref={lineRef}
+          points={linePoints}
+          lineWidth={6}
+          // segments
+          color={lineColor}
+          visible={Boolean(segment.sounds.length)}
+        />
+      </>
+    );
+  }
+);
 
 export default MusicBoxCanvas;
