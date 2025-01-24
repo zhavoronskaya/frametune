@@ -2,6 +2,7 @@ import { ChevronDown, XIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import useClickOutside from "../../hooks/useClickOutside";
 import EmptyState from "../EmptyState";
+import { cn } from "../../utils/classname";
 
 export type Option = {
   title: React.ReactNode;
@@ -17,6 +18,7 @@ type Props = {
   emptyStateTitle?: string;
   emptyStateDescription?: string;
   isSearchable?: boolean;
+  className?: string;
 };
 
 const Select = ({
@@ -28,6 +30,7 @@ const Select = ({
   emptyStateTitle,
   emptyStateDescription,
   isSearchable,
+  className,
 }: Props) => {
   const divRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -54,7 +57,7 @@ const Select = ({
         <button
           type="button"
           onClick={onClick}
-          className="flex w-full items-center justify-between border border-[--border] rounded-md px-2 py-2 bg-[--btn-bg-primary] text-xs"
+          className="flex w-full h-[40px] items-center justify-between border border-[--border] rounded-md px-2 py-2 bg-[--btn-bg-primary] text-xs"
         >
           <span className="overflow-hidden whitespace-nowrap text-ellipsis text-start flex-1">
             {value || placeholder}
@@ -83,7 +86,7 @@ const Select = ({
 
       {isSearchable && isOpen && (
         <input
-          className="h-[36px] flex w-full items-center justify-between border border-[--border] rounded-md px-2 py-2 bg-[--btn-bg-primary] text-xs"
+          className="h-[40px] flex w-full items-center justify-between border border-[--border] rounded-md px-2 py-2 bg-[--btn-bg-primary] text-xs"
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -93,7 +96,12 @@ const Select = ({
       )}
 
       {isOpen && (
-        <div className="overflow-auto p-1 max-h-44 w-full absolute z-10 left-0 top-[100%] bg-[--btn-bg-primary] rounded-md">
+        <div
+          className={cn(
+            "overflow-auto p-1 max-h-44 w-full absolute z-10 left-0 top-[100%] bg-[--btn-bg-primary] rounded-md",
+            className
+          )}
+        >
           {filteredOptions.length === 0 && (
             <EmptyState
               icon={emptyStateIcon}
