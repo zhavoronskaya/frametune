@@ -1,10 +1,13 @@
 - [x] Mute sounds, lines, cylinders
 - [x] Fix bug with angles while playing sound
 - [x] Sorting sound in folders by type
-- [ ] Lighting segments which playing now
+- [x] Lighting segments which playing now
 - [x] Multiple audios
 - [x] Tagging
-- [ ] Action bar
-- [ ] Sharing or saving or export
 - [ ] Volume component
+- [ ] Recalculate speed to bpm
+- [ ] Action bar
+- [ ] Synchronization objects
 - [ ] Pitch effect
+- [ ] Sharing or saving or export
+- [ ] Landing Page
