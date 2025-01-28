@@ -1,18 +1,24 @@
 "use client";
 
 import SwitchCheckBox from "@/lib/ui/components/SwitchCheckBox";
+import VolumeRange from "../VolumeRange";
+import { Entity } from "@/types";
 
 type Props = {
-  checked: boolean;
-  onChange: () => void;
+  entity: Entity;
+  onMuteChange: () => void;
 };
-const MuteSoundSwitch = ({ checked, onChange }: Props) => {
+const SoundSettings = ({ entity, onMuteChange }: Props) => {
   return (
-    <label className="flex items-center justify-between gap-2 px-4 py-6 border-[var(--border)] border-b">
-      <span className="text-sm">Mute Sound</span>
-      <SwitchCheckBox onChange={onChange} checked={checked} />
-    </label>
+    <div className="border-[var(--border)] border-b">
+      <label className="flex items-center justify-between gap-2 px-4 py-6 ">
+        <span className="text-sm">Mute</span>
+        <SwitchCheckBox onChange={onMuteChange} checked={entity.isMuted} />
+      </label>
+
+      <VolumeRange entity={entity} />
+    </div>
   );
 };
 
-export default MuteSoundSwitch;
+export default SoundSettings;

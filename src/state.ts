@@ -16,6 +16,7 @@ import {
 
 import SegmentService from "./services/Segment";
 import AudioPool from "./services/AudioPool";
+import Volume from "./services/Volume";
 
 export const STORAGE_KEY = "frametune-store";
 
@@ -25,6 +26,7 @@ export const useAppStore = create<AppState>()(
       nextLineId: 1,
       nextCylinerId: 1,
       nextSegmentId: 1,
+      masterVolume: 1,
 
       lines: {},
       cylinders: {},
@@ -65,6 +67,7 @@ export const useAppStore = create<AppState>()(
             type: "line",
             name: `Line ${lineId}`,
             cylinders: [],
+            volume: 1,
             positionY: Object.keys(state.lines).length,
             isMuted: false,
             tags: [],
@@ -136,6 +139,24 @@ export const useAppStore = create<AppState>()(
         });
       },
 
+      getLineSegments: (lineId: Id) => {
+        const state = get();
+        const line = state.lines[lineId];
+        if (!line) return [];
+
+        const cylindersIds = line.cylinders;
+        const segments = [] as Segment[];
+
+        cylindersIds.forEach((id) => {
+          const segmentsIdsOfCylinder = state.cylinders[id].segments;
+          segmentsIdsOfCylinder.forEach((id) =>
+            segments.push(state.segments[id])
+          );
+        });
+
+        return segments;
+      },
+
       addCylinder: (lineId: Id) => {
         const state = get();
         const line = state.lines[lineId];
@@ -161,6 +182,7 @@ export const useAppStore = create<AppState>()(
           name: `Cylinder ${newCylinderId}`,
           lineId,
           positionX: 0,
+          volume: 1,
           segments: newSegmentsList.map((s) => s.id),
           radius: 1,
           speed: 0,
@@ -234,6 +256,16 @@ export const useAppStore = create<AppState>()(
         });
       },
 
+      getCylinderSegments: (cylinderId: Id) => {
+        const state = get();
+        const cylinder = state.cylinders[cylinderId];
+        if (!cylinder) return [];
+
+        const segmentsIds = cylinder.segments;
+        const segments = segmentsIds.map((id) => state.segments[id]);
+        return segments;
+      },
+
       toggleMuteCylinder: (cylinderId: Id) => {
         set((state) => {
           const cylinder = state.cylinders[cylinderId];
@@ -250,6 +282,35 @@ export const useAppStore = create<AppState>()(
       setActiveEntity: (activeEntity) => {
         set(() => {
           return { activeEntity };
+        });
+      },
+
+      setEntityVolume: (entity: Entity, volume: number) => {
+        const state = get();
+        const updatedEntity = { ...entity, volume };
+        const key = `${updatedEntity.type}s` as const;
+
+        const affectedSegments = (() => {
+          const { type } = entity;
+          if (type === "line") return state.getLineSegments(entity.id);
+          if (type === "cylinder") return state.getCylinderSegments(entity.id);
+          return [entity];
+        })();
+
+        const soundsState = useSoundsStore.getState();
+        affectedSegments.forEach((s) => {
+          const volume = state.getResultSegmentVolume(s.id);
+          const sounds = soundsState.segmentsSounds[s.id];
+          sounds.forEach((s) => s.audio.setVolume(volume));
+        });
+
+        set((state) => {
+          return {
+            [key]: {
+              ...state[key],
+              [updatedEntity.id]: updatedEntity,
+            },
+          };
         });
       },
 
@@ -363,6 +424,7 @@ export const useAppStore = create<AppState>()(
           name: `Segment ${newSegmentId}`,
           cylinderId: cylinder.id,
           sounds: [],
+          volume: 1,
           isMuted: false,
           tags: [],
         };
@@ -380,6 +442,25 @@ export const useAppStore = create<AppState>()(
             segments: { ...state.segments, [newSegment.id]: newSegment },
           };
         });
+      },
+
+      getResultSegmentVolume: (segmentId: Id) => {
+        const state = get();
+        const segment = state.segments[segmentId];
+        if (!segment) return 0;
+
+        const cylinder = state.cylinders[segment.cylinderId];
+        if (!cylinder) return 0;
+
+        const line = state.lines[cylinder.lineId];
+        if (!line) return 0;
+
+        return Volume.calculate(
+          state.masterVolume,
+          line.volume,
+          cylinder.volume,
+          segment.volume
+        );
       },
 
       addSegmentSound: (segmentId: Id) => {
@@ -506,12 +587,14 @@ export const useAppStore = create<AppState>()(
 
 const appState = useAppStore.getState();
 const segments = appState.segments;
+const getResultSegmentVolume = appState.getResultSegmentVolume;
 const segmentsSounds: SegmentsSounds = {};
 Object.values(segments).forEach((segment) => {
   const sounds: Sound[] = [];
   segment.sounds.forEach((src) => {
     const audio = new AudioPool(src, 10);
     const sound: Sound = { src, audio };
+    audio.setVolume(getResultSegmentVolume(segment.id));
     sounds.push(sound);
   });
   segmentsSounds[segment.id] = sounds;

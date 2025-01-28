@@ -8,6 +8,7 @@ export type Line = {
   name: string;
   positionY: number;
   cylinders: Id[];
+  volume: number;
   isMuted: boolean;
   tags: string[];
 };
@@ -30,6 +31,7 @@ export type Cylinder = {
   name: string;
   positionX: number;
   segments: Id[];
+  volume: number;
   radius: number;
   speed: number;
   isMuted: boolean;
@@ -52,6 +54,7 @@ export type Segment = {
   name: string;
   cylinderId: Id;
   sounds: Sound["src"][];
+  volume: number;
   isMuted: boolean;
   tags: string[];
 };
@@ -71,7 +74,7 @@ export interface AppState {
   nextLineId: number;
   nextCylinerId: number;
   nextSegmentId: number;
-
+  masterVolume: number;
   isMuted: boolean;
   tags: Tags;
   lines: Lines;
@@ -91,6 +94,7 @@ export interface AppState {
   changeLinePosition: (id: Id, positionY: number) => void;
   changeLineName: (id: Id, name: string) => void;
   recalculateLinesPositions: () => void;
+  getLineSegments: (id: Id) => Segment[];
 
   toggleMuteLine: (id: Id) => void;
 
@@ -98,6 +102,7 @@ export interface AppState {
   updateCylinder: (cylinder: Cylinder) => void;
   deleteCylinder: (id: Id) => void;
   changeCylinderName: (id: Id, name: string) => void;
+  getCylinderSegments: (id: Id) => Segment[];
 
   toggleMuteCylinder: (id: Id) => void;
 
@@ -107,10 +112,13 @@ export interface AppState {
 
   addSegmentSound: (id: Id) => void;
   updateSegmentSound: (id: Id, idx: number, src: string) => void;
+  getResultSegmentVolume: (id: Id) => number;
+
   deleteSegmentSound: (id: Id, idx: number) => void;
   toggleMuteSegment: (id: Id) => void;
   setActiveEntity: (entity: Entity | null) => void;
   addEntityTag: (entity: Entity, tag: string) => void;
+  setEntityVolume: (entity: Entity, volume: number) => void;
   deleteEntityTag: (entity: Entity, tagName: string) => void;
 }
 

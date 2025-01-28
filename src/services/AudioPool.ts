@@ -22,8 +22,16 @@ class AudioPool {
     this.pool.forEach((a) => (a.src = src));
   }
 
+  setVolume(volume: number) {
+    this.pool.forEach((a) => (a.volume = volume));
+  }
+
   get duration() {
     return this.pool[0]?.duration || 0;
+  }
+
+  get volume() {
+    return this.pool[0]?.volume || 0;
   }
 }
 

@@ -1,6 +1,6 @@
 import { useAppStore } from "@/state";
 import { Id } from "@/types";
-import MuteSoundSwitch from "../MuteSoundSwitch";
+import SoundSettings from "../MuteSoundSwitch";
 import AddTagsInput from "../AddTagsInput";
 
 const LineForm = ({ lineId }: { lineId: Id }) => {
@@ -12,9 +12,9 @@ const LineForm = ({ lineId }: { lineId: Id }) => {
 
   return (
     <div className="w-full">
-      <MuteSoundSwitch
-        checked={line.isMuted}
-        onChange={() => toggleMuteLine(line.id)}
+      <SoundSettings
+        entity={line}
+        onMuteChange={() => toggleMuteLine(line.id)}
       />
       <AddTagsInput entity={line} />
     </div>

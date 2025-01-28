@@ -8,6 +8,7 @@ const SegmentService = {
       name: `Segment ${segmentId}`,
       cylinderId,
       sounds: [],
+      volume: 1,
       isMuted: false,
       tags: [],
     };

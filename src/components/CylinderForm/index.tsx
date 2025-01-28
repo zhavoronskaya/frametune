@@ -1,6 +1,6 @@
 import { useAppStore } from "@/state";
 import { Cylinder, Id } from "@/types";
-import MuteSoundSwitch from "../MuteSoundSwitch";
+import SoundSettings from "../MuteSoundSwitch";
 import AddTagsInput from "../AddTagsInput";
 
 const CylinderForm = ({ cylinderId }: { cylinderId: Id }) => {
@@ -12,9 +12,9 @@ const CylinderForm = ({ cylinderId }: { cylinderId: Id }) => {
 
   return (
     <div className="w-full">
-      <MuteSoundSwitch
-        checked={cylinder.isMuted}
-        onChange={() => toggleMuteCylinder(cylinder.id)}
+      <SoundSettings
+        entity={cylinder}
+        onMuteChange={() => toggleMuteCylinder(cylinder.id)}
       />
       <CylinderRange
         label="Position"

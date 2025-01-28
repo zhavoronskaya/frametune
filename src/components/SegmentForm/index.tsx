@@ -10,15 +10,16 @@ import {
 import { useEffect, useRef, useState } from "react";
 
 import Select from "@/lib/ui/components/Select";
-import { useAppStore } from "@/state";
+import { useAppStore, useSoundsStore } from "@/state";
 import { Id, Segment, Sound } from "@/types";
 import useAppSounds from "@/hooks/useAppSounds";
 import Button from "@/lib/ui/components/Button";
-import MuteSoundSwitch from "../MuteSoundSwitch";
+import SoundSettings from "../MuteSoundSwitch";
 import AddTagsInput from "../AddTagsInput";
 
 const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   const segments = useAppStore((state) => state.segments);
+  const sounds = useSoundsStore((state) => state.segmentsSounds);
   const segment = segments[segmentId];
 
   if (!segment) return null;
@@ -26,6 +27,11 @@ const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   return (
     <div className="w-full">
       <SegmentSounds segment={segment} />
+      <div className="py-2">
+        <button onClick={() => console.log("Sounds", sounds[segment.id])}>
+          Log Sounds
+        </button>
+      </div>
     </div>
   );
 };
@@ -43,9 +49,9 @@ const SegmentSounds = ({ segment }: { segment: Segment }) => {
 
   return (
     <div>
-      <MuteSoundSwitch
-        checked={segment.isMuted}
-        onChange={() => toggleMuteSegment(segment.id)}
+      <SoundSettings
+        entity={segment}
+        onMuteChange={() => toggleMuteSegment(segment.id)}
       />
 
       <div className="px-4 py-6 border-[var(--border)] border-b w-full">
