@@ -297,13 +297,6 @@ export const useAppStore = create<AppState>()(
           return [entity];
         })();
 
-        const soundsState = useSoundsStore.getState();
-        affectedSegments.forEach((s) => {
-          const volume = state.getResultSegmentVolume(s.id);
-          const sounds = soundsState.segmentsSounds[s.id];
-          sounds.forEach((s) => s.audio.setVolume(volume));
-        });
-
         set((state) => {
           return {
             [key]: {
@@ -311,6 +304,13 @@ export const useAppStore = create<AppState>()(
               [updatedEntity.id]: updatedEntity,
             },
           };
+        });
+
+        const soundsState = useSoundsStore.getState();
+        affectedSegments.forEach((s) => {
+          const volume = state.getResultSegmentVolume(s.id);
+          const sounds = soundsState.segmentsSounds[s.id];
+          sounds.forEach((s) => s.audio.setVolume(volume));
         });
       },
 
