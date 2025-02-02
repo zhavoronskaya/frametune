@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 
 import {
   AppState,
+  CommandsState,
   Cylinder,
   Entity,
   Id,
@@ -20,7 +21,7 @@ import Volume from "./services/Volume";
 
 export const STORAGE_KEY = "frametune-store";
 
-export const useAppStore = create<AppState>()(
+export const appStore = create<AppState>()(
   persist(
     (set, get) => ({
       nextLineId: 1,
@@ -35,6 +36,7 @@ export const useAppStore = create<AppState>()(
       isMuted: false,
 
       activeEntity: null,
+
       toggleMute: () => {
         set((state) => {
           const val = state.isMuted;
@@ -45,6 +47,20 @@ export const useAppStore = create<AppState>()(
         const state = get();
         set({ nextLineId: state.nextLineId + 1 });
         return state.nextLineId;
+      },
+
+      setMasterVolume: (volume: number) => {
+        set({ masterVolume: volume });
+
+        const state = get();
+        const soundsState = useSoundsStore.getState();
+        const affectedSegments = Object.values(state.segments);
+        affectedSegments.forEach((s) => {
+          const volume = state.getResultSegmentVolume(s.id);
+          const sounds = soundsState.segmentsSounds[s.id];
+          if (!sounds) return;
+          sounds.forEach((s) => s.audio.setVolume(volume));
+        });
       },
 
       createCylinderId() {
@@ -310,6 +326,7 @@ export const useAppStore = create<AppState>()(
         affectedSegments.forEach((s) => {
           const volume = state.getResultSegmentVolume(s.id);
           const sounds = soundsState.segmentsSounds[s.id];
+          if (!sounds) return;
           sounds.forEach((s) => s.audio.setVolume(volume));
         });
       },
@@ -585,7 +602,7 @@ export const useAppStore = create<AppState>()(
   )
 );
 
-const appState = useAppStore.getState();
+const appState = appStore.getState();
 const segments = appState.segments;
 const getResultSegmentVolume = appState.getResultSegmentVolume;
 const segmentsSounds: SegmentsSounds = {};
@@ -600,7 +617,7 @@ Object.values(segments).forEach((segment) => {
   segmentsSounds[segment.id] = sounds;
 });
 
-export const useSoundsStore = create<SoundsState>()((set, get) => ({
+export const soundsStore = create<SoundsState>()((set, get) => ({
   segmentsSounds,
 
   getSegmentSoundDuration: (id) => {
@@ -676,5 +693,8 @@ export const useSoundsStore = create<SoundsState>()((set, get) => ({
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   // @ts-expect-error
-  window.getState = useAppStore.getState;
+  window.getState = appStore.getState;
 }
+
+export const useAppStore = appStore;
+export const useSoundsStore = soundsStore;

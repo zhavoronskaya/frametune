@@ -70,6 +70,16 @@ export type Sound = {
 
 export type SegmentsSounds = Record<Segment["id"], Sound[]>;
 
+export type Command = {
+  id: string;
+  name: string;
+  precondition: (state: AppState) => boolean;
+};
+
+export type CommandsState = {
+  commands: Command[];
+};
+
 export interface AppState {
   nextLineId: number;
   nextCylinerId: number;
@@ -84,6 +94,7 @@ export interface AppState {
   activeEntity: Entity | null;
 
   toggleMute: () => void;
+  setMasterVolume: (volume: number) => void;
 
   createLineId: () => number;
   createCylinderId: () => number;
