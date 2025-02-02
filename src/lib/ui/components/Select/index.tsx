@@ -9,11 +9,11 @@ export type Option = {
   value: string;
 };
 
-type Props = {
+type Props<T extends Option[]> = {
   value?: string;
   placeholder: string;
-  options: Option[];
-  onChange: (value: string) => void;
+  options: T;
+  onChange: (value: T[number]["value"]) => void;
   emptyStateIcon?: React.ReactNode;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
@@ -21,7 +21,7 @@ type Props = {
   className?: string;
 };
 
-const Select = ({
+const Select = <T extends Option[] = Option[]>({
   value,
   placeholder,
   options,
@@ -31,7 +31,7 @@ const Select = ({
   emptyStateDescription,
   isSearchable,
   className,
-}: Props) => {
+}: Props<T>) => {
   const divRef = useRef<HTMLDivElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");

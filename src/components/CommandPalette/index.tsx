@@ -1,10 +1,17 @@
 "use client";
-import Select from "@/lib/ui/components/Select";
-import { useEffect, useState } from "react";
+import Select, { Option } from "@/lib/ui/components/Select";
+import CommandsService from "@/services/Commands";
+import { useAppStore } from "@/state";
 
 type Props = {};
 
 const CommandPalette = ({}: Props) => {
+  const state = useAppStore();
+
+  // const options = CommandsService.commands
+  //   .filter((c) => c.precondition(state))
+  //   .map((c) => ({ title: c.name, value: c.id }));
+
   return (
     <div className="">
       <Select
@@ -14,7 +21,11 @@ const CommandPalette = ({}: Props) => {
         emptyStateDescription="Please check your input or try again."
         options={[]}
         value={""}
-        onChange={() => {}}
+        onChange={(v) => {
+          switch (v) {
+            case "entities.muteSound":
+          }
+        }}
         className="top-0 translate-y-[-150%]"
       />
     </div>
