@@ -18,6 +18,7 @@ const Button = ({
   size = "md",
   variant = "primary",
   className,
+  ...rest
 }: Props) => {
   const resultClassName = twMerge(
     cn(
@@ -38,7 +39,12 @@ const Button = ({
   );
 
   return (
-    <button type="button" onClick={onClick} className={resultClassName}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={resultClassName}
+      {...rest}
+    >
       {children}
     </button>
   );

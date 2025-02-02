@@ -27,11 +27,11 @@ const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   return (
     <div className="w-full">
       <SegmentSounds segment={segment} />
-      <div className="py-2">
+      {/* <div className="py-2">
         <button onClick={() => console.log("Sounds", sounds[segment.id])}>
           Log Sounds
         </button>
-      </div>
+      </div> */}
     </div>
   );
 };

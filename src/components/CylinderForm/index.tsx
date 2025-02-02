@@ -2,6 +2,7 @@ import { useAppStore } from "@/state";
 import { Cylinder, Id } from "@/types";
 import SoundSettings from "../MuteSoundSwitch";
 import AddTagsInput from "../AddTagsInput";
+import RangeInput from "@/lib/ui/components/RangeInput";
 
 const CylinderForm = ({ cylinderId }: { cylinderId: Id }) => {
   const cylinders = useAppStore((state) => state.cylinders);
@@ -16,6 +17,7 @@ const CylinderForm = ({ cylinderId }: { cylinderId: Id }) => {
         entity={cylinder}
         onMuteChange={() => toggleMuteCylinder(cylinder.id)}
       />
+
       <CylinderRange
         label="Position"
         name="positionX"
@@ -52,30 +54,6 @@ type CylinderInputType = {
   cylinder: Cylinder;
 };
 
-// const CylinderInput = ({ cylinder, label, name, value }: CylinderInputType) => {
-//   const updateCylinder = useAppStore((state) => state.updateCylinder);
-
-//   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-//     e.preventDefault(); // prevent the default action
-
-//     updateCylinder({ ...cylinder, [name]: e.target.value });
-//   };
-
-//   return (
-//     <div className="px-4 py-6 border-[var(--border)] border-b w-full">
-//       <label className="block text-xs pb-4 font-semibold">{label}</label>
-//       <input
-//         type="text"
-//         id={name}
-//         name={name}
-//         className="bg-[var(--btn-bg-primary)] rounded-md px-2 py-1 w-full"
-//         onChange={handleChange}
-//         value={value}
-//       />
-//     </div>
-//   );
-// };
-
 const CylinderRange = ({
   cylinder,
   label,
@@ -86,16 +64,28 @@ const CylinderRange = ({
 }: CylinderInputType & { min: number; max: number }) => {
   const updateCylinder = useAppStore((state) => state.updateCylinder);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault(); // prevent the default action
+  const handleChange = (v: number) => {
+    // e.preventDefault(); // prevent the default action
 
-    updateCylinder({ ...cylinder, [name]: e.target.value });
+    updateCylinder({ ...cylinder, [name]: v });
   };
 
   return (
     <div className="px-4 py-6 border-[var(--border)] border-b w-full">
-      <label className="block text-sm pb-4 font-semibold">{label}</label>
-      <input
+      <label className="flex items-baseline justify-between text-sm pb-8 font-semibold ">
+        <span>{label}</span>
+        <span className="opacity-60">{value}</span>
+      </label>
+      <RangeInput
+        min={min}
+        max={max}
+        step={0.1}
+        value={Number(value)}
+        className=""
+        onChange={handleChange}
+        name={name}
+      />
+      {/* <input
         type="range"
         min={min}
         max={max}
@@ -105,7 +95,7 @@ const CylinderRange = ({
         className="rounded-md px-2 py-1 w-full hover:bg-[--active-node]"
         onChange={handleChange}
         value={value}
-      />
+      /> */}
     </div>
   );
 };
