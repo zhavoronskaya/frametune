@@ -16,6 +16,8 @@ import useAppSounds from "@/hooks/useAppSounds";
 import Button from "@/lib/ui/components/Button";
 import SoundSettings from "../MuteSoundSwitch";
 import AddTagsInput from "../AddTagsInput";
+import SoundsPicker from "../SoundsPicker";
+
 
 const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   const segments = useAppStore((state) => state.segments);
@@ -109,6 +111,16 @@ const SegmentSounds = ({ segment }: { segment: Segment }) => {
           />
         </Button>
       </div>
+
+      <
+      SoundsPicker
+    sounds={appSounds.sounds}
+    addSound={addSegmentSound}
+    updateSound={updateSegmentSound}
+    deleteSound={deleteSegmentSound}
+    segment={segment}
+      />
+
       <AddTagsInput entity={segment} />
     </div>
   );
