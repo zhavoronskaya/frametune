@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from "react";
 
 import { PauseIcon, PlayIcon } from "lucide-react";
 
-const SoundOption = ({ src }: { src: Sound["src"] }) => {
+const SoundOption = (
+  { src, name }: { src: Sound["src"], name: string }
+) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audio = useRef(new Audio(src));
+  const optionName = name || src.replace("/sounds", "");
 
   useEffect(() => {
     const onEnded = () => {
@@ -28,7 +31,7 @@ const SoundOption = ({ src }: { src: Sound["src"] }) => {
         className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-start "
         title={src}
       >
-        {src.replace("/sounds", "")}
+        {optionName}
       </span>
 
       {isPlaying ? (
