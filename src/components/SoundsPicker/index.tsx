@@ -84,7 +84,7 @@ export default function SoundsPicker(
     
     return explorer.list().map((name) => {
       if (explorer.aFile(name)) {
-	return { name, onClick: pickSound };
+	return { name, onClick: pickSound, filePath: explorer.absolutePath(name) };
       } else if (explorer.aDir(name)) {
 	return { name, onClick: handleDirClick };
       }
@@ -106,38 +106,39 @@ export default function SoundsPicker(
     return (
       <div className={wrapperClasses}>
 	<Button onClick={armExplorer} className={buttonClasses}>
-	Add Sound
-      </Button>
-	</div>
+	  Add Sound
+        </Button>
+      </div>
     );
   } else if (inArmedState) {
     return (
       <div className={wrapperClasses}>
 	<Button onClick={disarmExplorer} className={buttonClasses}>
-	Cancel
-      </Button>
-	<ul>
-	{buildOptions().map((option) => {
-	  return <SoundsPickerOption clickHandler={option.onClick} name={option.name} />
-	})}
-      </ul>
-	</div>
-    )
+	  Cancel
+        </Button>
+	
+        <ul>
+          {buildOptions().map((option) => {
+	    return <SoundsPickerOption clickHandler={option.onClick} name={option.name} filePath={option.filePath} />
+	  })}
+        </ul>
+      </div>
+    );
   } else if (inPickedState) {
     return (
       <div className={wrapperClasses}>
 	<div>
-	Picked Sounds
-      </div>
+          Picked Sounds
+        </div>
 	
 	{pickedSoundsList}
       
 	<div>
-	<Button onClick={armExplorer} className={buttonClasses}>
-	Add Sound
-      </Button>
+	  <Button onClick={armExplorer} className={buttonClasses}>
+	    Add Sound
+          </Button>
 	</div>
-	</div>
-    )
+      </div>
+    );
   }
 };
