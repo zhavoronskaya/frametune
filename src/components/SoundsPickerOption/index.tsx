@@ -5,11 +5,13 @@ export default function SoundsPickerOption({ name, clickHandler, filePath }) {
 
   if (filePath) {
     return (
-      <li onClick={optionPicked}>
-	<SoundOption name={name} src={filePath}/>
+      <li>
+	<button onClick={optionPicked}>
+	  <SoundOption name={name} src={filePath}/>
+	</button>
       </li>
     )
   } else {
-    return (<li onClick={optionPicked}>{name}</li>);
+    return (<li><button onClick={optionPicked}>{name}</button></li>);
   }
 };
