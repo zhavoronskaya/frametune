@@ -7,7 +7,9 @@ class FilesExplorer {
   }
 
   static buildFromFilesPath(files) {
-    return new FilesExplorer(FilesExplorer.buildStructureFromFiles(files));
+    return new FilesExplorer(
+      FilesExplorer.buildStructureFromFiles(files)
+    );
   }
 
   static buildStructureFromFiles(files) {
