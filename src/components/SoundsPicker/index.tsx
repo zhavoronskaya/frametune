@@ -39,7 +39,10 @@ export default function SoundsPicker(
   const [options, setOptions] = useState([]);
 
   // Component state
-  const [state, setState] = useState('picked');
+  const [state, setState] = useState('list');
+    
+  const inSelectState = state === 'select';
+  const inListState = state === 'list';
   
   const armExplorer = () => {
     const explorer = initiateExplorer();
@@ -47,23 +50,22 @@ export default function SoundsPicker(
     setOptions(explorer.list());
     setWorkingDir(explorer.workingDir);
     
-    setState('armed');
-  };  
+    setState('select');
+  };
+  
   const disarmExplorer = () => {
-    setState('picked');
+    setState('list');
 
     setOptions([]);
     setWorkingDir([]);
   };
+  
   const pickSound = (name) => {
     const explorer = initiateExplorer();
     addSound(segment.id);
     updateSound(segment.id, segment.sounds.length, explorer.absolutePath(name));
-    setState('picked');
+    setState('list');
   };
-  
-  const inArmedState = state === 'armed';
-  const inPickedState = state === 'picked';
 
   const handleDirClick = (dirName) => {
     let explorer = initiateExplorer();
@@ -97,7 +99,7 @@ export default function SoundsPicker(
     return <div className='flex'><button onClick={() => { handleSoundDelete(segment.id, idx)}}><Trash2Icon color="#fff" strokeWidth={1} size={18} className="opacity-60 hover:opacity-100" /></button><div>{sound}</div></div>;
   });
 
-  if (inArmedState) {
+  if (inSelectState) {
     return (
       <div className={wrapperClasses}>
 	<Button onClick={disarmExplorer} className={buttonClasses}>
@@ -111,7 +113,7 @@ export default function SoundsPicker(
         </ul>
       </div>
     );
-  } else if (inPickedState) {
+  } else if (inListState) {
     return (
       <div className={wrapperClasses}>
 	<div>
