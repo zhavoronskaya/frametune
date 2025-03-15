@@ -30,13 +30,9 @@ export default function SoundsPicker(
   const [workingDir, setWorkingDir] = useState([]);
   
   const initiateExplorer = () => {
-    const explorer =  new FilesExplorer(
-      FilesExplorer.buildStructureFromFiles(sounds)
+    return FilesExplorer.buildFromFilesPathAndDepth(
+      { files: sounds, depth: workingDir }
     );
-
-    workingDir.forEach((dir) => { explorer.changeDir(dir); });
-
-    return explorer;
   };
   
   // Options
