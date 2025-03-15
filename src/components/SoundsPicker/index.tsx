@@ -66,7 +66,6 @@ export default function SoundsPicker(
     setState('picked');
   };
   
-  const inInitialState = state === 'initial';
   const inArmedState = state === 'armed';
   const inPickedState = state === 'picked';
 
