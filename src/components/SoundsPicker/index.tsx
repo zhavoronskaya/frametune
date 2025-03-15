@@ -101,15 +101,7 @@ export default function SoundsPicker(
     return <div className='flex'><button onClick={() => { handleSoundDelete(segment.id, idx)}}><Trash2Icon color="#fff" strokeWidth={1} size={18} className="opacity-60 hover:opacity-100" /></button><div>{sound}</div></div>;
   });
 
-  if (inInitialState) {
-    return (
-      <div className={wrapperClasses}>
-	<Button onClick={armExplorer} className={buttonClasses}>
-	  Add Sound
-        </Button>
-      </div>
-    );
-  } else if (inArmedState) {
+  if (inArmedState) {
     return (
       <div className={wrapperClasses}>
 	<Button onClick={disarmExplorer} className={buttonClasses}>
