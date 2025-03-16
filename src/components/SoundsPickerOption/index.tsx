@@ -7,7 +7,7 @@ export default function SoundsPickerOption({ name, clickHandler, filePath }) {
     return (
       <li>
 	<button onClick={optionPicked}>
-	  <SoundOption name={name} src={filePath}/>
+	  <SoundOption name={name} src={filePath} buttonPosition={'left'}/>
 	</button>
       </li>
     )
