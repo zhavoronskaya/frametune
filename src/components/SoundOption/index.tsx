@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { PauseIcon, PlayIcon } from "lucide-react";
 
 const SoundOption = (
-  { src, name }: { src: Sound["src"], name: string }
+  { src, name, buttonPosition }: { src: Sound["src"], name: string, buttonPosition: string }
 ) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audio = useRef(new Audio(src));
   const optionName = name || src.replace("/sounds", "");
+  const position = buttonPosition || undefined;
 
   useEffect(() => {
     const onEnded = () => {
@@ -24,37 +25,73 @@ const SoundOption = (
     else audio.current.pause();
   }, [isPlaying]);
 
-  return (
-    <div className="flex overflow-hidden justify-between items-center">
-      {/* <span>{src.split("/").at(-1)}</span> */}
-      <span
-        className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-start "
-        title={src}
-      >
-        {optionName}
-      </span>
+  if (position === 'left') {
+    return (
+      <div className="flex overflow-hidden justify-between items-center">
+	{/* <span>{src.split("/").at(-1)}</span> */}
+      
+        {isPlaying ? (
+          <PauseIcon
+            size={16}
+            strokeWidth={1}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPlaying(false);
+            }}
+          />
+        ) : (
+          <PlayIcon
+            size={16}
+            strokeWidth={1}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPlaying(true);
+            }}
+          />
+        )}
 
-      {isPlaying ? (
-        <PauseIcon
-          size={16}
-          strokeWidth={1}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsPlaying(false);
-          }}
-        />
-      ) : (
-        <PlayIcon
-          size={16}
-          strokeWidth={1}
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsPlaying(true);
-          }}
-        />
-      )}
-    </div>
-  );
+	<span
+          className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-start "
+          title={src}
+  	>
+          {optionName}
+        </span>
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex overflow-hidden justify-between items-center">
+	{/* <span>{src.split("/").at(-1)}</span> */}
+      
+	<span
+          className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-start "
+          title={src}
+  	>
+          {optionName}
+        </span>
+
+	{isPlaying ? (
+          <PauseIcon
+            size={16}
+            strokeWidth={1}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPlaying(false);
+            }}
+          />
+        ) : (
+          <PlayIcon
+            size={16}
+            strokeWidth={1}
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsPlaying(true);
+            }}
+          />
+        )}
+      </div>
+    );
+  }
 };
 
 export default SoundOption;
