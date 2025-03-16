@@ -62,9 +62,14 @@ export default function SoundsPicker(
   
   const pickSound = (name) => {
     const explorer = initiateExplorer();
+    
     addSound(segment.id);
     updateSound(segment.id, segment.sounds.length, explorer.absolutePath(name));
+    
     setState('list');
+
+    setOptions([]);
+    setWorkingDir([]);
   };
 
   const handleDirClick = (dirName) => {
@@ -90,7 +95,8 @@ export default function SoundsPicker(
 
   const handleSoundDelete = (segmentId, idx) => {
     deleteSound(segmentId, idx);
-    initiateExplorer();
+    setOptions([]);
+    setWorkingDir([]);
   };
 
   const pickedSoundsList = segment.sounds.map((sound) => {
