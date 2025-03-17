@@ -51,23 +51,15 @@ class FilesExplorer {
   }
 
   list() {
-    if (this._depth.length > 0) {
-      return ['..'].concat(Object.keys(this._currentStructure));
-    } else {
-      return Object.keys(this._currentStructure);
-    }
+    return Object.keys(this._currentStructure);
   }
 
   changeDir(dirName) {
     if (!this._dirExists(dirName))
       throw new Error(`No dir named ${dirName} found!`);
 
-    if (dirName === '..') {
-      this._goUpDir();
-    } else {
-      this._currentStructure = this._currentStructure[dirName];
-      this._depth.push(dirName);
-    }
+    this._currentStructure = this._currentStructure[dirName];
+    this._depth.push(dirName);
   }
 
   get workingDir() { return this._depth; }
@@ -80,7 +72,7 @@ class FilesExplorer {
     return ['/sounds'].concat(this._depth).concat([name]).join('/');
   };
 
-  _goUpDir() {
+  goUpDir() {
     this._depth.pop();
     this._currentStructure = this._structure;
 

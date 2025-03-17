@@ -34,10 +34,9 @@ export default function SoundsPicker(
       { files: sounds, depth: workingDir }
     );
   };
-  
-  // Options
-  const [options, setOptions] = useState([]);
 
+  const upDirName = '..';
+  
   // Component state
   const [state, setState] = useState('list');
     
@@ -47,7 +46,6 @@ export default function SoundsPicker(
   const armExplorer = () => {
     const explorer = initiateExplorer();
 
-    setOptions(explorer.list());
     setWorkingDir(explorer.workingDir);
     
     setState('select');
@@ -56,7 +54,6 @@ export default function SoundsPicker(
   const disarmExplorer = () => {
     setState('list');
 
-    setOptions([]);
     setWorkingDir([]);
   };
   
@@ -64,29 +61,42 @@ export default function SoundsPicker(
     const explorer = initiateExplorer();
     
     addSound(segment.id);
-    updateSound(segment.id, segment.sounds.length, explorer.absolutePath(name));
+    updateSound(
+      segment.id,
+      segment.sounds.length,
+      explorer.absolutePath(name)
+    );
     
     setState('list');
 
-    setOptions([]);
     setWorkingDir([]);
   };
 
   const handleDirClick = (dirName) => {
     let explorer = initiateExplorer();
 
-    explorer.changeDir(dirName);
+    if (dirName === upDirName) explorer.goUpDir();
+    else                  explorer.changeDir(dirName);
     
-    setOptions(explorer.list());
     setWorkingDir(explorer.workingDir);
   };
 
   const buildOptions = () => {
     const explorer = initiateExplorer();
+
+    let optionsList = explorer.list();
     
-    return explorer.list().map((name) => {
+    if (workingDir.length > 0) {
+      optionsList = [upDirName].concat(optionsList);
+    }
+    
+    return optionsList.map((name) => {
       if (explorer.aFile(name)) {
-	return { name, onClick: pickSound, filePath: explorer.absolutePath(name) };
+	return {
+	  name,
+	  onClick: pickSound,
+	  filePath: explorer.absolutePath(name),
+	};
       } else if (explorer.aDir(name)) {
 	return { name, onClick: handleDirClick };
       }
@@ -95,7 +105,6 @@ export default function SoundsPicker(
 
   const handleSoundDelete = (segmentId, idx) => {
     deleteSound(segmentId, idx);
-    setOptions([]);
     setWorkingDir([]);
   };
 
