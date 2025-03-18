@@ -131,9 +131,9 @@ export default function SoundsPicker(
   } else if (inListState) {
     return (
       <div className={wrapperClasses}>
-	<div>
-          Picked Sounds
-        </div>
+	<label className="block text-sm pb-4 font-semibold">
+	  Sounds
+        </label>
 	
 	{pickedSoundsList}
       
