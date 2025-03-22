@@ -100,16 +100,6 @@ export default function SoundsPicker({ sounds, segment }: Props) {
         onClick: isFile ? pickSound : handleDirClick,
         filePath: isFile ? explorer.absolutePath(name) : null,
       };
-
-      // if (explorer.aFile(name)) {
-      //   return {
-      //     name,
-      //     onClick: pickSound,
-      //     filePath: explorer.absolutePath(name),
-      //   };
-      // } else if (explorer.aDir(name)) {
-      //   return { name, onClick: handleDirClick };
-      // }
     });
   };
 

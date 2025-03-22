@@ -1,3 +1,2 @@
-import SoundsPickerV2 from "./V2";
-
-export default SoundsPickerV2;
+export { default as SoundsPickerV1 } from "./SoundsPickerV1";
+export { default as SoundsPickerV2 } from "./SoundsPickerV2";

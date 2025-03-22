@@ -2,7 +2,7 @@ import SoundOption from "../SoundOption";
 
 type Props = {
   name: string;
-  onClick: () => void; // TODO check if name is already in
+  onClick: () => void;
   filePath: string | null;
 };
 
