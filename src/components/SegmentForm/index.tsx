@@ -1,23 +1,14 @@
 "use client";
 
-import {
-  Music4Icon,
-  PlusIcon,
-  Trash2Icon,
-} from "lucide-react";
-
-import { useEffect, useRef, useState } from "react";
-
-import Select from "@/lib/ui/components/Select";
 import { useAppStore, useSoundsStore } from "@/state";
 import { Id, Segment, Sound } from "@/types";
+
 import useAppSounds from "@/hooks/useAppSounds";
-import Button from "@/lib/ui/components/Button";
+import useSearchParam from "@/lib/ui/hooks/useSearchParam";
+
 import SoundSettings from "../MuteSoundSwitch";
 import AddTagsInput from "../AddTagsInput";
-import SoundsPicker from "../SoundsPicker";
-import SoundOption from "../SoundOption";
-
+import { SoundsPickerV1, SoundsPickerV2 } from "../SoundsPicker";
 
 const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
   const segments = useAppStore((state) => state.segments);
@@ -39,15 +30,9 @@ const SegmentForm = ({ segmentId }: { segmentId: Id }) => {
 };
 
 const SegmentSounds = ({ segment }: { segment: Segment }) => {
-  const addSegmentSound = useAppStore((state) => state.addSegmentSound);
-  const deleteSegmentSound = useAppStore((state) => state.deleteSegmentSound);
-  const updateSegmentSound = useAppStore((state) => state.updateSegmentSound);
-  const toggleMuteSegment = useAppStore((state) => state.toggleMuteSegment);
-
+  const soundsPickerVersion = useSearchParam("sounds-picker-version") ?? "1";
   const appSounds = useAppSounds();
-  const handlePlus = () => {
-    addSegmentSound(segment.id);
-  };
+  const toggleMuteSegment = useAppStore((state) => state.toggleMuteSegment);
 
   return (
     <div>
@@ -56,13 +41,12 @@ const SegmentSounds = ({ segment }: { segment: Segment }) => {
         onMuteChange={() => toggleMuteSegment(segment.id)}
       />
 
-      <SoundsPicker
-        sounds={appSounds.sounds}
-        addSound={addSegmentSound}
-        updateSound={updateSegmentSound}
-        deleteSound={deleteSegmentSound}
-        segment={segment}
-      />
+      {soundsPickerVersion === "1" && (
+        <SoundsPickerV1 sounds={appSounds.sounds} segment={segment} />
+      )}
+      {soundsPickerVersion === "2" && (
+        <SoundsPickerV2 sounds={appSounds.sounds} segment={segment} />
+      )}
 
       <AddTagsInput entity={segment} />
     </div>

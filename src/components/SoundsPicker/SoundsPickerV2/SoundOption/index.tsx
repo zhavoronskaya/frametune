@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-
 import { PauseIcon, PlayIcon } from "lucide-react";
+import { Sound } from "@/types";
 
-const SoundOption = (
-  { src, name, buttonPosition }: { src: Sound["src"], name: string, buttonPosition: string }
-) => {
+type Props = {
+  src: Sound["src"];
+  name: string;
+  buttonPosition: string;
+};
+
+const SoundOption = ({ src, name, buttonPosition }: Props) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const audio = useRef(new Audio(src));
   const optionName = name || src.replace("/sounds", "");
@@ -25,11 +29,11 @@ const SoundOption = (
     else audio.current.pause();
   }, [isPlaying]);
 
-  if (position === 'left') {
+  if (position === "left") {
     return (
       <div className="flex overflow-hidden justify-between items-center">
-	{/* <span>{src.split("/").at(-1)}</span> */}
-      
+        {/* <span>{src.split("/").at(-1)}</span> */}
+
         {isPlaying ? (
           <PauseIcon
             size={16}
@@ -50,10 +54,10 @@ const SoundOption = (
           />
         )}
 
-	<span
+        <span
           className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-start "
           title={src}
-  	>
+        >
           {optionName}
         </span>
       </div>
@@ -61,16 +65,16 @@ const SoundOption = (
   } else {
     return (
       <div className="flex overflow-hidden justify-between items-center">
-	{/* <span>{src.split("/").at(-1)}</span> */}
-      
-	<span
+        {/* <span>{src.split("/").at(-1)}</span> */}
+
+        <span
           className="whitespace-nowrap overflow-hidden text-ellipsis flex-1 text-start "
           title={src}
-  	>
+        >
           {optionName}
         </span>
 
-	{isPlaying ? (
+        {isPlaying ? (
           <PauseIcon
             size={16}
             strokeWidth={1}
